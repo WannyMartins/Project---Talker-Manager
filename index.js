@@ -1,15 +1,13 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const talkersFs = require('./fs-utils');
-// const talker = require('./talker.json');
+const fs = require('./fs-utils');
+const authUser = require('./auth-middleware');
 
 const app = express();
 app.use(bodyParser.json());
 
 const HTTP_OK_STATUS = 200;
 const PORT = '3000';
-
-console.log(talkersFs.getTalkers());
 
 // não remova esse endpoint, e para o avaliador funcionar
 app.get('/', (_request, response) => {
@@ -18,7 +16,7 @@ app.get('/', (_request, response) => {
 
 app.get('/talker', async (_request, response) => {
   try {
-    const talker = await talkersFs.getTalkers();
+    const talker = await fs.getTalkers();
     return response.status(HTTP_OK_STATUS).json(talker);
   } catch (e) {
     return response.status(500).end();
@@ -27,7 +25,7 @@ app.get('/talker', async (_request, response) => {
 
 app.get('/talker/:id', async (request, response) => {
   try {
-    const talker = await talkersFs.getTalkers();
+    const talker = await fs.getTalkers();
     const { id } = request.params;
     const talk = talker.find((r) => r.id === Number(id));
     if (!talk) {
@@ -37,6 +35,16 @@ app.get('/talker/:id', async (request, response) => {
   } catch (e) {
     return response.status(500).end();
 } 
+});
+
+app.post('/login', authUser, (request, response) => {
+    const { email, password } = request.body;
+
+    if (email && password) {
+    const token = fs.randomToken();
+
+    return response.status(HTTP_OK_STATUS).json({ token });
+    }
 });
 
 app.listen(PORT, () => {
