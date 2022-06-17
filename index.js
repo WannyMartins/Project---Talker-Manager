@@ -1,13 +1,25 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const fs = require('./fs-utils');
-const authUser = require('./auth-middleware');
+const crypto = require('crypto');
+const { getTalkers, setTalkers } = require('./fs-utils');
+const { authToken, authUser, authName, 
+  authAge, authTalk, authWatchedAt } = require('./auth-middleware');
 
 const app = express();
 app.use(bodyParser.json());
 
 const HTTP_OK_STATUS = 200;
 const PORT = '3000';
+
+app.use((req, _res, next) => {
+//   console.log('req.method:', req.method);
+//   console.log('req.path:', req.path);
+//   console.log('req.params:', req.params);
+//   console.log('req.query:', req.query);
+//   console.log('req.headers:', req.headers);
+  // console.log('req.body:', req.body);
+  next();
+});
 
 // não remova esse endpoint, e para o avaliador funcionar
 app.get('/', (_request, response) => {
@@ -16,7 +28,7 @@ app.get('/', (_request, response) => {
 
 app.get('/talker', async (_request, response) => {
   try {
-    const talker = await fs.getTalkers();
+    const talker = await getTalkers();
     return response.status(HTTP_OK_STATUS).json(talker);
   } catch (e) {
     return response.status(500).end();
@@ -25,7 +37,7 @@ app.get('/talker', async (_request, response) => {
 
 app.get('/talker/:id', async (request, response) => {
   try {
-    const talker = await fs.getTalkers();
+    const talker = await getTalkers();
     const { id } = request.params;
     const talk = talker.find((r) => r.id === Number(id));
     if (!talk) {
@@ -38,10 +50,31 @@ app.get('/talker/:id', async (request, response) => {
 });
 
 app.post('/login', authUser, (_request, response) => {
-    const token = fs.randomToken();
+  const token = crypto.randomBytes(8).toString('hex');
 
-    return response.status(HTTP_OK_STATUS).json({ token });
-    });
+return response.status(HTTP_OK_STATUS).json({ token });
+});
+
+app.post(
+  '/talker', 
+  authToken, 
+  authName, 
+  authAge, 
+  authTalk,
+  authWatchedAt, 
+ async (request, response, newTalker) => {
+  const { name, age, talk: { watchedAt, rate } } = request.body;
+      const talker = await getTalkers(newTalker);
+
+      const newId = talker[talker.length - 1].id + 1;
+
+      talker.push({ name, age, id: newId, talk: { watchedAt, rate } });
+
+      await setTalkers(talker, newTalker);
+
+      response.status(201).json({ name, age, id: newId, talk: { watchedAt, rate } });
+    },
+);
 
 app.listen(PORT, () => {
   console.log('Online');

@@ -18,13 +18,4 @@ function getUser() {
   .then((fileContent) => JSON.parse(fileContent));
 }
 
-function randomToken() {
-  let token = '';
-  const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  for (let i = 0; i < 16; i += 1) {
-    token += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
-  }
-  return token;
-}
-
-module.exports = { getTalkers, setTalkers, setUser, getUser, randomToken };
+module.exports = { getTalkers, setTalkers, setUser, getUser };
