@@ -64,9 +64,9 @@ app.post(
   authWatchedAt, 
  async (request, response, newTalker) => {
   const { name, age, talk: { watchedAt, rate } } = request.body;
-      const talker = await getTalkers(newTalker);
+      const talker = await getTalkers();
 
-      const newId = talker[talker.length - 1].id + 1;
+      const newId = talker.length + 1;
 
       talker.push({ name, age, id: newId, talk: { watchedAt, rate } });
 
@@ -74,6 +74,32 @@ app.post(
 
       response.status(201).json({ name, age, id: newId, talk: { watchedAt, rate } });
     },
+);
+
+app.put(
+  '/talker/:id',
+  authToken, 
+  authName, 
+  authAge, 
+  authTalk,
+  authWatchedAt, 
+  async (request, response) => {
+  const { id } = request.params;
+  const { name, age, talk: { watchedAt, rate } } = request.body;
+  const talker = await getTalkers();
+
+  const editedTalker = talker.map((talk) => {
+    if (talk.id === Number(id)) {
+      return { name, age, id: Number(id), talk: { watchedAt, rate } };
+    }
+    return talk;
+  });
+
+    await setTalkers(editedTalker);
+
+  return response.status(HTTP_OK_STATUS)
+  .json({ name, age, id: Number(id), talk: { watchedAt, rate } });
+},
 );
 
 app.listen(PORT, () => {
