@@ -102,6 +102,19 @@ app.put(
 },
 );
 
+app.delete(
+  '/talker/:id',
+  authToken, 
+  async (request, response) => {
+  const { id } = request.params;
+  const talker = await getTalkers();
+  const talkerid = talker.find((talk) => talk.id === Number(id));
+
+  talker.splice(talkerid, 1);
+  return response.status(204).end();
+  },
+);
+
 app.listen(PORT, () => {
   console.log('Online');
 });
