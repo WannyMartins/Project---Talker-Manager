@@ -37,15 +37,11 @@ app.get('/talker/:id', async (request, response) => {
 } 
 });
 
-app.post('/login', authUser, (request, response) => {
-    const { email, password } = request.body;
-
-    if (email && password) {
+app.post('/login', authUser, (_request, response) => {
     const token = fs.randomToken();
 
     return response.status(HTTP_OK_STATUS).json({ token });
-    }
-});
+    });
 
 app.listen(PORT, () => {
   console.log('Online');
