@@ -125,10 +125,10 @@ app.delete(
   async (request, response) => {
   const { id } = request.params;
   const talker = await getTalkers();
-  const talkerid = talker.find((talk) => talk.id === Number(id));
+  const talkerid = talker.filter((talk) => Number(talk.id) !== Number(id));
+  const writeTalker = await setTalkers(talkerid);
 
-  talker.splice(talkerid, 1);
-  return response.status(204).end();
+  return response.status(204).json(writeTalker);
   },
 );
 
